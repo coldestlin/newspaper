@@ -63,11 +63,11 @@ class Configuration(object):
         # Unique stopword classes for oriental languages, don't toggle
         self.stopwords_class = StopWords
 
-        self.browser_user_agent = 'newspaper/%s' % __version__
+        # self.browser_user_agent = 'newspaper/%s' % __version__
         self.headers = {}
         self.request_timeout = 7
         self.proxies = {}
-        self.number_threads = 10
+        self.number_threads = 2  # reduce the initial threads for fetching categories, reduce from 10
 
         self.verbose = False  # for debugging
 
@@ -77,6 +77,23 @@ class Configuration(object):
         # *every* time you build a `Source` object
         # TODO: Actually make this work
         # self.use_cached_categories = True
+
+        # modify user agents to behave normally. load into memory at initialization.
+        self.user_agents = self.available_user_agents()
+        self.browser_user_agent = self.user_agent
+
+    @property
+    def user_agent(self):
+        import random
+        return random.choice(self.user_agents)
+
+    @staticmethod
+    def available_user_agents():
+        from .settings import USERAGENTS
+        with open(USERAGENTS, 'rt') as f:
+            agents = f.readlines()
+            agents = [a.strip('\n') for a in agents]
+            return agents
 
     def get_language(self):
         return self._language
